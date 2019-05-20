@@ -1,0 +1,87 @@
+{% extends 'common/base.html' %}
+{% load static %}
+{% block linkscript %}
+    <link rel="stylesheet" href="{% static 'market/css/market.css' %}">
+    <script src="{% static 'market/js/market.js' %}"></script>
+{% endblock %}
+{% block base %}
+<div id="market">
+    {# 左侧总类别显示的样式 #}
+    <aside>
+        <menu>
+            <ul>
+                {% for item in footTypeData %}
+                <li>
+                    <span class="yellowSlide"></span>
+                    <a href="{% url 'App:market2' item.typeid 0 0 %}">{{item.typename}}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </menu>
+    </aside>
+    <section>
+        <nav>
+            <ul>
+                <li><span id="alltypebtn">全部类型<span class="glyphicon glyphicon-chevron-down" style="font-weight: 100"></span></span></li>
+				<li><span id="showsortbtn">综合排序<span class="glyphicon glyphicon-chevron-down" style="font-weight: 100"></span></span></li>
+            </ul>
+        </nav>
+        {#   商品数据样式     #}
+        <menu>
+            <ul>
+                {% for item in goodsData %}
+                <li>
+                    <a href="#">
+                        <img src="{{item.productimg}}" />
+                        <article class="shoppingInfo">
+                            <h6>{{item.productlongname}}</h6>
+                            <p class="detailTag"><span>精选</span><span>{{item.pedesc}}</span></p>
+                            <span class="unit">{{item.specifics}}</span>
+                            <p class="price"><span>￥{{item.price}}</span><s><span>￥{{item.marketprice}}</span></s></p>
+                        </article>
+                    </a>
+                    <section>
+						<button class="subShopping" onclick="doCar({{ item.id }},0);">-</button>
+                        <span id="{{item.id}}">{{item.num|default:0}}</span>
+						<button class="addShopping" onclick="doCar({{ item.id }},1);">+</button>
+					</section>
+                </li>
+                {% endfor %}
+            </ul>
+            {#   通过父类查询子类数据的样式     #}
+            <div id="typediv">
+                <div>
+                    {% for item in childCidList %}
+                    <a href="{% url 'App:market2' categoryid item.1 0 %}"><span>{{item.0}}</span></a>
+                    {% endfor %}
+                </div>
+            </div>
+            {#      二次筛选的排序      #}
+            <div id="sortdiv">
+                <div>
+                    <a href="{% url 'App:market2' categoryid childcid 0 %}" class="sorta"><span>综合排序</span></a>
+                    <a href="{% url 'App:market2' categoryid childcid 1 %}" class="sorta"><span>销量排序</span></a>
+                    <a href="{% url 'App:market2' categoryid childcid 2 %}" class="sorta"><span>价格最低</span></a>
+                    <a href="{% url 'App:market2' categoryid childcid 3 %}" class="sorta"><span>价格最高</span></a>
+                </div>
+            </div>
+        </menu>
+    </section>
+</div>
+<script>
+    {#  goodsId为商品的自增ID state为状态值 0 商品-1 1为商品+1  #}
+    function doCar(goodsId,state) {
+        $.get('/doCar/',{'goodsId':goodsId,'state':state},function (data,status){
+{#            console.log(data,status);#}
+            if(data.code == 500){
+                if(window.confirm('您还没有登录 是否前往登录？')){
+                    window.location.href = '/login/';
+                }
+            }else{
+                {#      将商品数量更改到节点中      #}
+                $('#'+goodsId).html(data.totalNum);
+            }
+        })
+    }
+</script>
+{% endblock %}
